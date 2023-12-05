@@ -1,5 +1,6 @@
-use std::{collections::HashMap, str::Lines};
+use std::{collections::HashMap, str::Lines, sync::Arc};
 use core::cmp::min;
+use crossbeam::thread as cb_thread;
 
 #[derive(Debug)]
 struct NumberMapping {
@@ -63,48 +64,67 @@ struct Almanac {
     maps: HashMap<String, AlmanacEntry>
 }
 impl Almanac {
-    fn get_seed_locations(self: &Self, seed_start: i64, seed_num: i64) -> Vec<i64> {
+    fn get_seed_location(self: &Self, seed: i64) -> i64 {
         let mut map_entry = self.maps.get("seed").expect("Almanac has no seed maps");
-        println!("Mapping values from SEED map...");
+        //println!("Mapping values from SEED map...");
 
-        let mut values : Vec<i64> = (seed_start..(seed_start + seed_num)).map(|x| x).collect();
+        let mut value : i64 = seed;
         loop {
             // Map all values to next level of map
-            values = values.iter().map(|x| map_entry.map.map_value(*x)).collect();
+            value = map_entry.map.map_value(value);
 
             // Increment map level
             match self.maps.get(&map_entry.target_entry) {
-                Some(entry) => { map_entry = entry; println!("Next map type: {}...", &map_entry.target_entry); },
+                Some(entry) => { map_entry = entry; /*println!("Next map type: {}...", &map_entry.target_entry);*/ },
                 None => { break; }
             }
         }
 
-        values
+        value
     }
 
     fn get_lowest_seed_location(self: &Self, seed: &SeedType) -> i64 {
-        let mut locations : Vec<i64>;
-
         println!("Checking lowest seed: {:?}", seed);
 
+        let location : i64;
+
         match seed {
-            SeedType::Range(range) => { locations = self.get_seed_locations(range.min, range.len); },
-            SeedType::Seed(value) => { locations = self.get_seed_locations(*value, 1); }
+            SeedType::Range(range) => { 
+                //locations = self.get_seed_locations(range.min, range.len); 
+                location = (range.min..(range.min + range.len))
+                    .map(|x| self.get_seed_location(x))
+                    .fold(i64::MAX, |acc, val| min(acc, val));
+            },
+            SeedType::Seed(value) => { 
+                //locations = self.get_seed_locations(*value, 1); 
+                location = self.get_seed_location(*value);
+            }
         }
 
-        locations.sort();
-        locations[0]
+        println!("Seed {:?} lowest location: {location}", seed);
+
+        location
     }
 
     fn get_lowest_location(self: &Self) -> i64 {
-        let mut lowest_loc = i64::MAX;
+        let self_arc = Arc::new(self);
 
-        for seed in &self.seeds {
-            let location = self.get_lowest_seed_location(seed);
-            lowest_loc = min(lowest_loc, location);
-        }
+        cb_thread::scope(|s| {
+            let mut threads : Vec<cb_thread::ScopedJoinHandle<i64>> = Vec::new();
 
-        lowest_loc
+            for seed in &self.seeds {
+                let seed_arc = Arc::new(seed);
+                let self_clone = self_arc.clone();
+
+                threads.push(s.spawn(move |_| {
+                    self_clone.get_lowest_seed_location(&seed_arc)
+                }));
+            }
+
+            threads.into_iter()
+                .map(|t| t.join().unwrap() )
+                .fold(i64::MAX, |acc, val| min(acc, val))
+        }).unwrap()        
     }
 }
 
