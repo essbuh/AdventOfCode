@@ -15,6 +15,18 @@
             "cwd": "${workspaceRoot}",
             "environment": [],
             "externalConsole": true
+        },
+        {
+            "name": "Day 5",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/target/debug/advent2023_day5.exe",
+            "preLaunchTask": "rust: cargo build",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true
         }
     ]
 }
