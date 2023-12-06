@@ -1,11 +1,11 @@
 use std::{cmp::max, time::SystemTime};
 
 struct RaceResult {
-    time: i32,
-    distance: i32,
+    time: i64,
+    distance: i64,
 }
 
-fn get_distance_traveled(time_allowed: i32, time_held: i32) -> i32 {
+fn get_distance_traveled(time_allowed: i64, time_held: i64) -> i64 {
     let speed_per_sec = 1;
     let speed = speed_per_sec * time_held;
 
@@ -13,15 +13,15 @@ fn get_distance_traveled(time_allowed: i32, time_held: i32) -> i32 {
     time_moving * speed
 }
 
-fn get_values_2(line: &str) -> Vec<i32> {
+fn get_values_2(line: &str) -> Vec<i64> {
     line.split_once(':').unwrap().1
         .trim().split(' ').into_iter()
         .filter(|v| !v.is_empty())
-        .map(|v| v.parse::<i32>().unwrap())
+        .map(|v| v.parse::<i64>().unwrap())
         .collect()
 }
 
-fn get_values(line: &str, remove_spaces: bool) -> Vec<i32> {
+fn get_values(line: &str, remove_spaces: bool) -> Vec<i64> {
     if remove_spaces {
         let without_spaces = line.replace(" ", "");
         get_values_2(&without_spaces)
@@ -51,7 +51,7 @@ fn get_ways_to_beat(result: &RaceResult) -> usize {
         .count()
 }
 
-fn get_num_ways_to_beat(results: &Vec<RaceResult>, use_quadratic: bool) -> i32 {
+fn get_num_ways_to_beat(results: &Vec<RaceResult>, use_quadratic: bool) -> i64 {
     if use_quadratic {
         results.iter()
             .map(|r| solve_quadratic(r.time, r.distance))
@@ -61,16 +61,16 @@ fn get_num_ways_to_beat(results: &Vec<RaceResult>, use_quadratic: bool) -> i32 {
                 (b - a) + 1
             })
             .reduce(|a, b| a * b)
-            .unwrap_or(0) as i32
+            .unwrap_or(0) as i64
     } else {
         results.iter()
             .map(|result| get_ways_to_beat(result))
             .reduce(|a, b| a * b)
-            .unwrap_or(0) as i32
+            .unwrap_or(0) as i64
     }
 }
 
-fn solve_quadratic(max_time: i32, best_distance: i32) -> Option<(i32, i32)> {
+fn solve_quadratic(max_time: i64, best_distance: i64) -> Option<(i64, i64)> {
     // equation = x^2 - x(max_time) + best_distance
     // a = 1, b = max_time, c = best_distance
     let a = 1.0;
@@ -82,7 +82,7 @@ fn solve_quadratic(max_time: i32, best_distance: i32) -> Option<(i32, i32)> {
         let root = root.sqrt();
         let min = (-b - root) / (2.0 * a);
         let max = (-b + root) / (2.0 * a);
-        Some((min.ceil() as i32, max.floor() as i32))
+        Some((min.ceil() as i64, max.floor() as i64))
     } else {
         None
     }
@@ -117,7 +117,7 @@ fn part_2(input: &str) {
 }
 
 fn main() {
-    let input = include_str!("sample.txt");
+    let input = include_str!("input.txt");
     part_1(&input);
     part_2(&input);
 }
