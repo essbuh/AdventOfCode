@@ -1,5 +1,4 @@
-use regex::Regex;
-use std::cmp::max;
+use std::{cmp::max, time::SystemTime};
 
 struct RaceResult {
     time: i64,
@@ -14,29 +13,27 @@ fn get_distance_traveled(time_allowed: i64, time_held: i64) -> i64 {
     time_moving * speed
 }
 
-fn get_captures(line: &str, re: &Regex) -> Vec<i64> {
-    re.captures_iter(line)
-        .map(|c| {
-            let (_, [value]) = c.extract();
-            value.parse::<i64>().unwrap()
-        })
+fn get_values_2(line: &str) -> Vec<i64> {
+    line.split_once(':').unwrap().1
+        .trim().split(' ').into_iter()
+        .filter(|v| !v.is_empty())
+        .map(|v| v.parse::<i64>().unwrap())
         .collect()
 }
 
-fn get_values(line: &str, re: &Regex, remove_spaces: bool) -> Vec<i64> {
+fn get_values(line: &str, remove_spaces: bool) -> Vec<i64> {
     if remove_spaces {
         let without_spaces = line.replace(" ", "");
-        get_captures(&without_spaces, re)
+        get_values_2(&without_spaces)
     } else {
-        get_captures(line, re)
+        get_values_2(line)
     }
 }
 
 fn parse_results(input: &str, remove_spaces: bool) -> Vec<RaceResult> {
-    let re = Regex::new(r"\b(\d+)").unwrap();
     let lines : Vec<&str> = input.lines().collect();
-    let times : Vec<i64> = get_values(lines[0], &re, remove_spaces);
-    let distances = get_values(lines[1], &re, remove_spaces);
+    let times = get_values(lines[0], remove_spaces);
+    let distances = get_values(lines[1], remove_spaces);
 
     let mut result = Vec::new();
     result.reserve(times.len());
@@ -62,17 +59,23 @@ fn get_num_ways_to_beat(results: &Vec<RaceResult>) -> usize {
 }
 
 fn part_1(input: &str) {
+    let now = SystemTime::now();        
     let results = parse_results(input, false);
-    let num_ways_to_beat = get_num_ways_to_beat(&results);
+    println!("Finished parsing results in {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
 
-    println!("Part 1: {num_ways_to_beat}");
+    let now = SystemTime::now();        
+    let num_ways_to_beat = get_num_ways_to_beat(&results);
+    println!("Part 1: {num_ways_to_beat} | took {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
 }
 
 fn part_2(input: &str) {
+    let now = SystemTime::now();        
     let results = parse_results(input, true);
+    println!("Finished parsing results in {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
+    
+    let now = SystemTime::now();        
     let num_ways_to_beat = get_num_ways_to_beat(&results);
-
-    println!("Part 2: {num_ways_to_beat}");
+    println!("Part 2: {num_ways_to_beat} | took {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
 }
 
 fn main() {
