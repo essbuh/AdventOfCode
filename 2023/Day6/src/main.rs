@@ -1,11 +1,11 @@
 use std::{cmp::max, time::SystemTime};
 
 struct RaceResult {
-    time: i64,
-    distance: i64,
+    time: i32,
+    distance: i32,
 }
 
-fn get_distance_traveled(time_allowed: i64, time_held: i64) -> i64 {
+fn get_distance_traveled(time_allowed: i32, time_held: i32) -> i32 {
     let speed_per_sec = 1;
     let speed = speed_per_sec * time_held;
 
@@ -13,15 +13,15 @@ fn get_distance_traveled(time_allowed: i64, time_held: i64) -> i64 {
     time_moving * speed
 }
 
-fn get_values_2(line: &str) -> Vec<i64> {
+fn get_values_2(line: &str) -> Vec<i32> {
     line.split_once(':').unwrap().1
         .trim().split(' ').into_iter()
         .filter(|v| !v.is_empty())
-        .map(|v| v.parse::<i64>().unwrap())
+        .map(|v| v.parse::<i32>().unwrap())
         .collect()
 }
 
-fn get_values(line: &str, remove_spaces: bool) -> Vec<i64> {
+fn get_values(line: &str, remove_spaces: bool) -> Vec<i32> {
     if remove_spaces {
         let without_spaces = line.replace(" ", "");
         get_values_2(&without_spaces)
@@ -51,35 +51,73 @@ fn get_ways_to_beat(result: &RaceResult) -> usize {
         .count()
 }
 
-fn get_num_ways_to_beat(results: &Vec<RaceResult>) -> usize {
-    results.iter()
-        .map(|result| get_ways_to_beat(result))
-        .reduce(|a, b| a * b)
-        .unwrap_or(0)
+fn get_num_ways_to_beat(results: &Vec<RaceResult>, use_quadratic: bool) -> i32 {
+    if use_quadratic {
+        results.iter()
+            .map(|r| solve_quadratic(r.time, r.distance))
+            .filter(|r| r.is_some())
+            .map(|r| {
+                let (a, b) = r.unwrap();
+                (b - a) + 1
+            })
+            .reduce(|a, b| a * b)
+            .unwrap_or(0) as i32
+    } else {
+        results.iter()
+            .map(|result| get_ways_to_beat(result))
+            .reduce(|a, b| a * b)
+            .unwrap_or(0) as i32
+    }
+}
+
+fn solve_quadratic(max_time: i32, best_distance: i32) -> Option<(i32, i32)> {
+    // equation = x^2 - x(max_time) + best_distance
+    // a = 1, b = max_time, c = best_distance
+    let a = 1.0;
+    let b = -max_time as f32;
+    let c = (best_distance + 1) as f32; // add one because we need to beat not match!
+
+    let root = b*b - 4.0*a*c;
+    if root > 0.0 {
+        let root = root.sqrt();
+        let min = (-b - root) / (2.0 * a);
+        let max = (-b + root) / (2.0 * a);
+        Some((min.ceil() as i32, max.floor() as i32))
+    } else {
+        None
+    }
 }
 
 fn part_1(input: &str) {
     let now = SystemTime::now();        
     let results = parse_results(input, false);
-    println!("Finished parsing results in {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
+    println!("Finished parsing results in {} ms", (now.elapsed().unwrap().as_nanos() as f32 / 1000000.0));
 
     let now = SystemTime::now();        
-    let num_ways_to_beat = get_num_ways_to_beat(&results);
-    println!("Part 1: {num_ways_to_beat} | took {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
+    let num_ways_to_beat = get_num_ways_to_beat(&results, false);
+    println!("Part 1: {num_ways_to_beat} | took {} ms (Brute Force)", (now.elapsed().unwrap().as_nanos() as f32 / 1000000.0));
+
+    let now = SystemTime::now();        
+    let num_ways_to_beat = get_num_ways_to_beat(&results, true);
+    println!("Part 1: {num_ways_to_beat} | took {} ms (Quadratic)", (now.elapsed().unwrap().as_nanos() as f32 / 1000000.0));
 }
 
 fn part_2(input: &str) {
     let now = SystemTime::now();        
     let results = parse_results(input, true);
-    println!("Finished parsing results in {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
+    println!("Finished parsing results in {} ms", (now.elapsed().unwrap().as_nanos() as f32 / 1000000.0));
     
     let now = SystemTime::now();        
-    let num_ways_to_beat = get_num_ways_to_beat(&results);
-    println!("Part 2: {num_ways_to_beat} | took {} ms", (now.elapsed().unwrap().as_micros() as f32 / 1000.0));
+    let num_ways_to_beat = get_num_ways_to_beat(&results, false);
+    println!("Part 2: {num_ways_to_beat} | took {} ms (Brute Force)", (now.elapsed().unwrap().as_nanos() as f32 / 1000000.0));
+
+    let now = SystemTime::now();        
+    let num_ways_to_beat = get_num_ways_to_beat(&results, true);
+    println!("Part 2: {num_ways_to_beat} | took {} ms (Quadratic)", (now.elapsed().unwrap().as_nanos() as f32 / 1000000.0));
 }
 
 fn main() {
-    let input = include_str!("input.txt");
+    let input = include_str!("sample.txt");
     part_1(&input);
     part_2(&input);
 }
