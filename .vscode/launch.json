@@ -8,7 +8,7 @@
 
         {
             "name": "Day 4",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day4.exe",
             "preLaunchTask": "rust: cargo build",
@@ -20,7 +20,7 @@
         },
         {
             "name": "Day 5",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day5.exe",
             "preLaunchTask": "rust: cargo build",
@@ -32,7 +32,7 @@
         },
         {
             "name": "Day 6",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day6.exe",
             "preLaunchTask": "rust: cargo build",
@@ -44,7 +44,7 @@
         },
         {
             "name": "Day 7",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day7.exe",
             "preLaunchTask": "rust: cargo build",
@@ -56,7 +56,7 @@
         },
         {
             "name": "Day 8",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day8.exe",
             "preLaunchTask": "rust: cargo build",
@@ -68,7 +68,7 @@
         },
         {
             "name": "Day 9",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day9.exe",
             "preLaunchTask": "rust: cargo build",
@@ -80,7 +80,7 @@
         },
         {
             "name": "Day 10",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day10.exe",
             "preLaunchTask": "rust: cargo build",
@@ -92,7 +92,7 @@
         },
         {
             "name": "Day 11",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/aoc2023_day11.exe",
             "preLaunchTask": "rust: cargo build",
