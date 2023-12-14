@@ -20,6 +20,7 @@ struct Platform {
     rows: Vec<Vec<char>>,
 }
 impl Platform {
+    #[allow(dead_code)]
     fn print(self: &Self) {
         for row in &self.rows {
             let s : String = row.iter().collect();
@@ -188,7 +189,7 @@ fn part_2()
         match seen_platforms.get(&next_platform) {
             Some(iter) => {
                 loop_start = Some(*iter);
-                println!("Hit a loop! current index = {i}, loop_start = {}", *iter);
+                //println!("Hit a loop! current index = {i}, loop_start = {}", *iter);
                 break;
             }
             None => {
@@ -206,16 +207,16 @@ fn part_2()
         Some(start) => {
             let loop_end = seen_platforms.len() as i32;
             let loop_length = loop_end - start;
-            println!("Hit a loop on iteration {}, length {}", start, loop_length);
+            //println!("Hit a loop on iteration {}, length {}", start, loop_length);
             let final_index = (num_cycles - start) % loop_length + start;
             let final_platform = iter_to_platform.get(&final_index).unwrap();
             weight = final_platform.get_support_weight((0, 0));
 
-            println!("Final platform: {final_index}");
-            final_platform.print();
+            //println!("Final platform: {final_index}");
+            //final_platform.print();
         },
         None => {
-            println!("No loop detected.");
+            //println!("No loop detected.");
             weight = platform.get_support_weight((0, 0));
         }
     }
