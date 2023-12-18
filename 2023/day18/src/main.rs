@@ -2,7 +2,6 @@ use std::cmp::{min, max};
 
 type Point = (i32, i32);
 
-const CHAR_EMPTY : char = '.';
 const CHAR_FILLED : char = '#';
 const CHAR_UP : char = '^';
 const CHAR_DOWN : char = 'v';
@@ -32,12 +31,10 @@ struct DigPlan {
 }
 impl DigPlan {
     fn run_instructions(self: &Self, map: &mut DigMap) {    
-        println!("Ensuring capacity...");    
         let mut pos = map.ensure_capacity(&self.instructions);
 
         map.dig_hole(&pos, CHAR_FILLED);
 
-        println!("Running instructions...");
         for instruction in &self.instructions {
             map.run_instruction(&mut pos, instruction);
         }
@@ -45,7 +42,7 @@ impl DigPlan {
 }
 struct DigMap
 {    
-    map: Vec<Vec<char>>,
+    map: Vec<Vec<(i32, char)>>,
 }
 impl DigMap {
     fn ensure_capacity(self: &mut Self, instructions: &Vec<DigInstruction>) -> Point {
@@ -79,35 +76,42 @@ impl DigMap {
         }
 
         let bounds = (point_max.0 - point_min.0, point_max.1 - point_min.1);
-        println!("Bounds: ({}, {})", bounds.0, bounds.1);
-        
-        println!("Filling X...");
-        let mut row = Vec::new();
-        row.resize_with((bounds.0 + 1) as usize, || CHAR_EMPTY);
-
-        println!("Filling Y...");
-        self.map.resize_with((bounds.1 + 1) as usize, || row.clone());
+        self.map.resize_with((bounds.1 + 1) as usize, || Vec::new());
 
         (-point_min.0, -point_min.1)
     }
 
-    fn dig_hole(self: &mut Self, pos: &Point, val: char) {   
-        self.map[pos.1 as usize][pos.0 as usize] = val;
+    fn dig_hole(self: &mut Self, pos: &Point, val: char) {
+        let row = &mut self.map[pos.1 as usize];
+
+        let mut index = 0;
+        for (i, col) in row.iter_mut().enumerate() {
+            if col.0 == pos.0 {
+                if col.1 == CHAR_FILLED {
+                    col.1 = val;
+                }
+                return;
+            }
+
+            if col.0 > pos.0 {
+                break;
+            }
+
+            index = i + 1;
+        }
+
+        row.insert(index, (pos.0, val));
     }
 
     fn run_instruction(self: &mut Self, pos: &mut Point, instruction: &DigInstruction) {        
         match instruction.dir {
             'R' => {
-                for _ in 0..instruction.count {
-                    pos.0 += 1;
-                    self.dig_hole(&pos, CHAR_FILLED);
-                }
+                pos.0 += instruction.count as i32;
+                self.dig_hole(&(pos.0 - 1, pos.1), CHAR_FILLED);
             },
             'L' => {
-                for _ in 0..instruction.count {
-                    pos.0 -= 1;
-                    self.dig_hole(&pos, CHAR_FILLED);
-                }
+                pos.0 -= instruction.count as i32;
+                self.dig_hole(&(pos.0 + instruction.count as i32 - 1, pos.1), CHAR_FILLED);
             },
             'U' => {
                 self.dig_hole(&pos, CHAR_UP);
@@ -127,25 +131,37 @@ impl DigMap {
         }
     }
 
-    fn fill_interior(self: &mut Self) {
-        println!("Filling...");
-        for line in self.map.iter_mut() {
-            let mut inside = false;
-            for char in line.iter_mut() {
-                match char {
-                    '^' => { inside = true; },
-                    'v' => { inside = false; },
-                    '.' => { if inside { *char = '#' } },
+    fn get_fill_size(self: &Self) -> usize {
+        let mut fill_size : usize = 0;
+
+        for (_i, row) in self.map.iter().enumerate() {
+            let mut last_x = -1;
+
+            let mut row_size = 0;
+            for col in row.iter() {
+                match col.1 {
+                    CHAR_UP => {
+                        row_size += 1;
+                        last_x = col.0;
+                    },
+                    CHAR_DOWN => {
+                        let fill_count = col.0 - last_x;
+                        row_size += fill_count as usize;
+                        last_x = col.0;
+                    },
+                    CHAR_FILLED => { 
+                        let fill_count = col.0 - last_x;
+                        row_size += fill_count as usize;
+                        last_x = col.0;
+                    }
                     _ => {}
                 }
             }
-        }
-    }
 
-    fn get_fill_size(self: &Self) -> usize {
-        self.map.iter()
-            .map(|row| row.into_iter().filter(|&c| c != &'.').count())
-            .sum()
+            fill_size += row_size;
+        }
+
+        fill_size
     }
 
     fn print(self: &mut Self) {
@@ -194,38 +210,34 @@ fn parse_input(input: &str, color_is_instruction: bool) -> DigPlan {
     map
 }
 
-fn run_part(input: &str, color_is_instruction: bool) -> (usize, usize) {
+fn run_part(input: &str, color_is_instruction: bool) -> usize {
     let plan = parse_input(input, color_is_instruction);
     let mut map = DigMap { map: Vec::new() };
     
     plan.run_instructions(&mut map);
     map.print();
-    let result_prefill = map.get_fill_size();
+    let result = map.get_fill_size();
 
-    map.fill_interior();
-    map.print();
-    let result_postfill = map.get_fill_size();
-
-    (result_prefill, result_postfill)
+    result
 }
 
 fn part_1()
 {
     let input = include_str!("input.txt");
-    let (result_prefill, result_postfill) = run_part(input, false);
+    let result = run_part(input, false);
     
-    println!("Part 1: {result_prefill} Pre-Fill, {result_postfill} Post-Fill");
+    println!("Part 1: {result}");
 }
 
 fn part_2()
 {
-    let input = include_str!("sample.txt");
-    let (result_prefill, result_postfill) = run_part(input, true);
+    let input = include_str!("input.txt");
+    let result = run_part(input, true);
     
-    println!("Part 2: {result_prefill} Pre-Fill, {result_postfill} Post-Fill");
+    println!("Part 2: {result}");
 }
 
 fn main() {
     part_1();
-    //part_2();
+    part_2();
 }
