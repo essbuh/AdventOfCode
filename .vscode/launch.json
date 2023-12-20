@@ -197,6 +197,18 @@
             "cwd": "${workspaceRoot}",
             "environment": [],
             "externalConsole": false
+        },
+        {
+            "name": "Day 20",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/target/debug/aoc2023_day20.exe",
+            "preLaunchTask": "rust: cargo build",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": false
         }
     ]
 }
