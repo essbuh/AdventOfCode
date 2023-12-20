@@ -403,4 +403,16 @@ mod tests {
         let result = get_result_part1(include_str!("sample_2.txt"), 1000, false);
         assert_eq!(result, 11687500);
     }
+
+    #[test]
+    fn part_1_input() {
+        let result = get_result_part1(include_str!("input.txt"), 1000, false);
+        assert_eq!(result, 806332748);
+    }
+
+    #[test]
+    fn part_2_input() {
+        let result = get_result_part2(include_str!("input.txt"), false);
+        assert_eq!(result, 228060006554227);
+    }
 }
