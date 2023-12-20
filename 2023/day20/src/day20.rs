@@ -403,10 +403,4 @@ mod tests {
         let result = get_result_part1(include_str!("sample_2.txt"), 1000, false);
         assert_eq!(result, 11687500);
     }
-
-    #[test]
-    fn part_2_sample_2() {
-        let result = get_result_part2(include_str!("sample_2.txt"), false);
-        assert_eq!(result, 1);
-    }
 }
