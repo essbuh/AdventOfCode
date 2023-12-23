@@ -1,7 +1,9 @@
 mod types;
 mod debug;
 
-use crate::types::{Maze, Path};
+use std::collections::HashSet;
+
+use crate::types::{Maze, Point};
 
 fn get_longest_path_len(input: &str, ignore_slopes: bool, debug: bool) -> usize {
     let maze = Maze::from_input(&input, ignore_slopes);
@@ -14,15 +16,15 @@ fn get_longest_path_len(input: &str, ignore_slopes: bool, debug: bool) -> usize 
     
     let longest_path = all_paths
         .iter()
-        .max_by(|&a, &b| a.1.cmp(&b.1))
+        .max_by(|&a, &b| a.2.cmp(&b.2))
         .cloned()
-        .unwrap_or((Path::new(), 0));
+        .unwrap_or((HashSet::new(), Point::from_xy(0,0), 0));
 
     if debug {
-        maze.print_path(&longest_path.0);
+        maze.print_path(&longest_path);
     }
 
-    longest_path.1
+    longest_path.2
 }
 
 pub fn part_1(input: &str, debug: bool) -> usize {

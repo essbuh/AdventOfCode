@@ -6,8 +6,7 @@ const DIR_DOWN: Direction = (0, 1);
 const DIR_LEFT: Direction = (-1, 0);
 const DIR_RIGHT: Direction = (1, 0);
 
-pub type PathPoint = (Point, usize);
-pub type Path = Vec<PathPoint>;
+pub type Path = (HashSet<Point>, Point, usize);
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub struct Point {
@@ -199,28 +198,44 @@ impl Maze {
         segment
     }
 
-    pub fn get_paths(&self, debug: bool) -> Vec<(Path, usize)> {
+    pub fn get_paths(&self, debug: bool) -> Vec<Path> {
         let mut final_paths = Vec::new();
 
         let mut path_queue : VecDeque<Path> = VecDeque::new();
-        path_queue.push_front(vec![(self.entry, 0 as usize)]);
+        path_queue.push_front((HashSet::from([self.entry]), self.entry, 0));
 
         while let Some(path) = path_queue.pop_front() {
             if debug { println!("Testing path: {path:?}"); }
-            let last_point = path.last().expect("Path should not be empty").0;
-            if &last_point == &self.exit {
+            let last_point = &path.1;
+            if last_point == &self.exit {
                 // Reached the end!
-                let path_length : usize = path.iter().map(|p| p.1).sum();
-                final_paths.push((path, path_length));
+                final_paths.push(path);
                 continue;
             }
 
             if let Some(connections) = self.direct_connections.get(&last_point) {
-                for connection in connections.iter()
-                    .filter(|&c| path.iter().position(|p| &p.0 == &c.0).is_none())
-                {
+                let connections = connections.iter()
+                    .filter(|&c| !path.0.contains(&c.0));
+
+                if self.ignore_slopes {
+                    if let Some(exit_path) = connections.clone()
+                        .find(|&c| &c.0 == &self.exit)
+                    {
+                        let mut path = path.clone();
+                        path.0.insert(exit_path.0);
+                        path.1 = exit_path.0;
+                        path.2 += exit_path.1;
+
+                        path_queue.push_front(path);
+                        continue;
+                    }
+                }
+                
+                for connection in connections {
                     let mut path = path.clone();
-                    path.push((connection.0, connection.1));
+                    path.0.insert(connection.0);
+                    path.1 = connection.0;
+                    path.2 += connection.1;
                     path_queue.push_front(path);
                 }
             }

@@ -5,16 +5,17 @@ use crate::types::*;
 impl Maze {
     fn hydrate_path(&self, path: &Path) -> Vec<Point> {
         let mut result = Vec::new();
+        let points = Vec::from_iter(path.0.iter());
 
-        for i in 0..path.len()-1 {
-            let curr_point = &path[i].0;
-            let next_point = &path[i+1];
+        for i in 0..points.len()-1 {
+            let curr_point = points[i];
+            let next_point = points[i+1];
             
             let connection = self.direct_connections.get(curr_point).unwrap()
                 .iter()
                 .filter(|&c| {
-                    &c.1 == &next_point.1
-                    && c.1 == next_point.1
+                    &c.0 == next_point
+                    //&& c.1 == next_point.1
                 }).next().expect("bad path");
 
             result.pop(); // Segments have start & end
