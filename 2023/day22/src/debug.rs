@@ -66,17 +66,17 @@ pub fn print_tower(tower: &BrickTower) {
     let mid_z = (tower.bounds.1.z + 1) / 2;
     for z in (1..=tower.bounds.1.z).rev() {
         let z_as_str = z.to_string();
-        let mut bricks = tower.get_bricks_by_z(z);
+        let mut bricks = tower.bricks_by_z[z].clone();
 
         // +X -Y
         let mut s = String::new();
         for x in 0..=max_dim {
             let mut label : Option<char> = None;
-            bricks.sort_by(|a, b| tower.bricks[*b].min.y.cmp(&tower.bricks[*a].min.y));
+            bricks.sort_by(|a, b| tower.bricks[*b].left.y.cmp(&tower.bricks[*a].left.y));
 
             for brick_idx in &bricks {
                 let brick = &tower.bricks[*brick_idx];
-                if brick.min.x <= x && brick.max.x >= x {
+                if brick.left.x <= x && brick.right.x >= x {
                     label = Some(brick.label);
                     break;
                 }
@@ -96,11 +96,11 @@ pub fn print_tower(tower: &BrickTower) {
         let mut s = String::new();
         for y in (0..=max_dim).rev() {
             let mut label : Option<char> = None;
-            bricks.sort_by(|a, b| tower.bricks[*b].max.x.cmp(&tower.bricks[*a].max.x));
+            bricks.sort_by(|a, b| tower.bricks[*b].right.x.cmp(&tower.bricks[*a].right.x));
 
             for brick_idx in &bricks {
                 let brick = &tower.bricks[*brick_idx];
-                if brick.min.y <= y && brick.max.y >= y {
+                if brick.left.y <= y && brick.right.y >= y {
                     label = Some(brick.label);
                     break;
                 }
@@ -119,11 +119,11 @@ pub fn print_tower(tower: &BrickTower) {
         let mut s = String::new();
         for x in (0..=max_dim).rev() {
             let mut label : Option<char> = None;
-            bricks.sort_by(|a, b| tower.bricks[*a].max.y.cmp(&tower.bricks[*b].max.y));
+            bricks.sort_by(|a, b| tower.bricks[*a].right.y.cmp(&tower.bricks[*b].right.y));
 
             for brick_idx in &bricks {
                 let brick = &tower.bricks[*brick_idx];
-                if brick.min.x <= x && brick.max.x >= x {
+                if brick.left.x <= x && brick.right.x >= x {
                     label = Some(brick.label);
                     break;
                 }
@@ -142,11 +142,11 @@ pub fn print_tower(tower: &BrickTower) {
         let mut s = String::new();
         for y in 0..=max_dim {
             let mut label : Option<char> = None;
-            bricks.sort_by(|a, b| tower.bricks[*a].min.x.cmp(&tower.bricks[*b].min.x));
+            bricks.sort_by(|a, b| tower.bricks[*a].left.x.cmp(&tower.bricks[*b].left.x));
 
             for brick_idx in &bricks {
                 let brick = &tower.bricks[*brick_idx];
-                if brick.min.y <= y && brick.max.y >= y {
+                if brick.left.y <= y && brick.right.y >= y {
                     label = Some(brick.label);
                     break;
                 }
