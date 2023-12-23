@@ -6,7 +6,8 @@ const DIR_DOWN: Direction = (0, 1);
 const DIR_LEFT: Direction = (-1, 0);
 const DIR_RIGHT: Direction = (1, 0);
 
-pub type Path = (HashSet<Point>, Point, usize);
+// Note: would be faster as a HashSet<Point>, but need the order for debug draw
+pub type Path = (Vec<Point>, Point, usize);
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub struct Point {
@@ -198,18 +199,22 @@ impl Maze {
         segment
     }
 
-    pub fn get_paths(&self, debug: bool) -> Vec<Path> {
-        let mut final_paths = Vec::new();
+    pub fn get_longest_path(&self, debug: bool) -> Path {
+        let mut longest_path : Path = (vec![ self.entry ], self.entry, 0);
+        let mut considered_paths = 0;
 
-        let mut path_queue : VecDeque<Path> = VecDeque::new();
-        path_queue.push_front((HashSet::from([self.entry]), self.entry, 0));
+        let mut path_queue : Vec<Path> = Vec::new();
+        path_queue.push(longest_path.clone());
 
-        while let Some(path) = path_queue.pop_front() {
+        while let Some(path) = path_queue.pop() {
             if debug { println!("Testing path: {path:?}"); }
             let last_point = &path.1;
             if last_point == &self.exit {
                 // Reached the end!
-                final_paths.push(path);
+                if path.2 > longest_path.2 {
+                    longest_path = path;
+                }
+                considered_paths += 1;
                 continue;
             }
 
@@ -222,25 +227,26 @@ impl Maze {
                         .find(|&c| &c.0 == &self.exit)
                     {
                         let mut path = path.clone();
-                        path.0.insert(exit_path.0);
+                        path.0.push(exit_path.0);
                         path.1 = exit_path.0;
                         path.2 += exit_path.1;
 
-                        path_queue.push_front(path);
+                        path_queue.push(path);
                         continue;
                     }
                 }
                 
                 for connection in connections {
                     let mut path = path.clone();
-                    path.0.insert(connection.0);
+                    path.0.push(connection.0);
                     path.1 = connection.0;
                     path.2 += connection.1;
-                    path_queue.push_front(path);
+                    path_queue.push(path);
                 }
             }
         }
 
-        final_paths
+        println!("Found {considered_paths} total paths");
+        longest_path
     }
 }
