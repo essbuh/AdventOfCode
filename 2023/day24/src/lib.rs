@@ -49,6 +49,6 @@ mod tests {
     fn part2_input() {
         let result = part_2(include_str!("input.txt"), false);
         println!("Part 2 (Real): {result}");
-        assert_eq!(result, 47);
+        assert_eq!(result, 908621716620524);
     }
 }
